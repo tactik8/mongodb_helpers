@@ -40,7 +40,7 @@ export class MongoDB {
             return this._uri
         }
 
-        let uri = `mongodb://${this.userID}:${this.password}@${this.url}}:${this.port || "27017"}/?authMechanism=DEFAULT`
+        let uri = `mongodb://${this.userID}:${this.password}@${this.url}:${this.port || "27017"}/?authMechanism=DEFAULT`
         return uri
     }
 
@@ -274,7 +274,8 @@ async function dbSearch(client, databaseID, tenantID, filter, orderBy, orderDire
 
         // Expand
         if (expand == true) {
-            records = await dbGetNested(client, databaseID, tenantID, records)?.result || []
+            records = await dbGetNested(client, databaseID, tenantID, records)
+            records = records?.result || []
         }
 
         action.setCompleted(records)
@@ -318,13 +319,17 @@ async function dbGet(client, databaseID, tenantID, record_ids, expand = true) {
 
         let records = await collection.find(query).toArray();
 
+
         // Clean records
         records = _cleanMongoRecord(records)
 
+
         // Expand
         if (expand == true) {
-            records = await dbGetNested(client, databaseID, tenantID, records)?.result
+            records = await dbGetNested(client, databaseID, tenantID, records)
+            records = records?.result
         }
+
 
         action.setCompleted(records)
         console.log(action.toString())

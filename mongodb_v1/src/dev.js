@@ -7,7 +7,7 @@ console.log('Start')
 
 async function test() {
 
-    let record = helpers.testRecord()
+    //let record = helpers.testRecord()
 
 
     let db = new MongoDB()
@@ -18,12 +18,23 @@ async function test() {
 
 
     // init db
-    let action = await db.init()
+    let a_init = await db.init()
 
 
-    let act1 = await db.search()
+    let record = {
+            "@type": "Thing",
+            "@id": "https://test.com/thing1",
+            "name": "thing1"
+        }
 
-    console.log('r', act1.actionStatus)
+        let a1 = await db.post(record)
+        let action = await db.get(record?.['@id'])
+
+
+        console.log('rr', action.result)
+
+
+        
     
 
 
