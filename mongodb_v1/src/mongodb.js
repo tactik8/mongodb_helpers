@@ -56,7 +56,7 @@ export class MongoDB {
         let initAction = await dbInit(this.uri)
         if (initAction.actionStatus == "CompletedActionStatus") {
             this._dbInitializedFlag = true
-            this._client = initAction.result
+            this._client = initAction.result?.[0]
         }
 
         return initAction
@@ -124,6 +124,7 @@ async function dbGetNested(client, databaseID, tenantID, records) {
             let a = await dbGet(client, databaseID, tenantID, toFetchIDs, false)
             let dbRecords = a.result
 
+
             // Add records to recordsDB
             recordsDB.post(dbRecords)
 
@@ -139,6 +140,7 @@ async function dbGetNested(client, databaseID, tenantID, records) {
         }
 
         let results = initialIDs.map(x => recordsDB.get(x))
+
 
         action.setCompleted(results)
         console.log(action.toString())
@@ -248,7 +250,6 @@ async function dbSearch(client, databaseID, tenantID, filter, orderBy, orderDire
     console.log(action.toString())
 
     tenantID = tenantID || 'test'
-    orderDirection = orderDirection || 1
     filter = filter || {}
     orderBy = orderBy || "@id"
     orderDirection = orderDirection || 1
@@ -278,12 +279,14 @@ async function dbSearch(client, databaseID, tenantID, filter, orderBy, orderDire
             records = records?.result || []
         }
 
+
         action.setCompleted(records)
         console.log(action.toString())
         return action
 
 
     } catch (err) {
+        console.log('err', err)
         action.setFailed(String(err))
         console.log(action.toString())
         return action
@@ -303,7 +306,7 @@ async function dbGet(client, databaseID, tenantID, record_ids, expand = true) {
 
     tenantID = tenantID || 'test'
 
-    record_ids = (Array.isArray(record_ids) && typeof record_ids != "string") ? record_ids : [record_ids]
+    record_ids = Array.isArray(record_ids)  ? record_ids : [record_ids]
 
     record_ids = record_ids.map(x => x?.["@id"] || x)
 
@@ -319,10 +322,9 @@ async function dbGet(client, databaseID, tenantID, record_ids, expand = true) {
 
         let records = await collection.find(query).toArray();
 
-
+        
         // Clean records
         records = _cleanMongoRecord(records)
-
 
         // Expand
         if (expand == true) {

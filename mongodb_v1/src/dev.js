@@ -20,22 +20,25 @@ async function test() {
     // init db
     let a_init = await db.init()
 
-
-    let record = {
-            "@type": "Thing",
-            "@id": "https://test.com/thing1",
-            "name": "thing1"
-        }
-
-        let a1 = await db.post(record)
-        let action = await db.get(record?.['@id'])
+    console.log('a', a_init.actionStatus )
+    if(a_init.isCompleted == false){
+        console.log('Error init')
+    }
 
 
-        console.log('rr', action.result)
+    let filter = undefined
+    let orderBy = undefined
+    let orderDirection = undefined
+    let limit = undefined
+    let offset = undefined
 
 
-        
-    
+    let action = await db.search(filter, orderBy, orderDirection, limit, offset)
+
+    console.log('a', action)
+
+
+
 
 
 
