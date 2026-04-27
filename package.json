@@ -5,7 +5,7 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "src/index.js",
+  "main": "mongodb_v1/src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
