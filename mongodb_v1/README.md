@@ -6,8 +6,15 @@
 
 ## How to use
 
+
 ```
-import { MongoDB } from "mongodb"
+npm install github:tactik8/mongodb_helpers
+
+```
+
+
+```
+import { MongoDB } from "mongodb_helpers"
 
 let db = new MongoDB()
 
