@@ -274,7 +274,7 @@ async function dbSearch(client, databaseID, tenantID, filter, orderBy, orderDire
 
         // Expand
         if (expand == true) {
-            records = await dbGetNested(client, databaseID, tenantID, records)
+            records = await dbGetNested(client, databaseID, tenantID, records)?.result || []
         }
 
         action.setCompleted(records)
