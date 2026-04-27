@@ -323,7 +323,7 @@ async function dbGet(client, databaseID, tenantID, record_ids, expand = true) {
 
         // Expand
         if (expand == true) {
-            records = await dbGetNested(client, databaseID, tenantID, records)
+            records = await dbGetNested(client, databaseID, tenantID, records)?.result
         }
 
         action.setCompleted(records)
