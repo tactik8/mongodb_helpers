@@ -1,0 +1,16 @@
+{
+  "name": "mongodb_helpers",
+  "version": "0.0.1",
+  "description": "MongoDB client",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "jsonld_helpers": "github:tactik8/jsonldHelpers_v1",
+    "mongodb": "^7.2.0"
+  }
+}
