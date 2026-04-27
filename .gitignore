@@ -1,0 +1,16 @@
+# Dependency directories
+# Never commit node_modules; it's huge and can be rebuilt with npm install
+node_modules/
+
+
+.env
+
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
