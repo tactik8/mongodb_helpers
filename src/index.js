@@ -8,4 +8,3 @@ export default mongodb
 
 import { test} from './dev.js'
 
-test()
