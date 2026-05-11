@@ -2,10 +2,10 @@ import { MongoDB } from './mongodb.js'
 
 let URI = 'mongodb://tactik8:Temp4now@192.168.2.243:27017/?authMechanism=DEFAULT'
 
-console.log('Start')
 
 
-async function test() {
+
+export async function test() {
 
     //let record = helpers.testRecord()
 
@@ -43,5 +43,6 @@ async function test() {
 
 
 }
+
 
 test()
