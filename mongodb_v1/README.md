@@ -27,3 +27,18 @@ npx nodemon mongodb_v1/src/index.js
 
 
 ```
+
+
+
+# Installation
+```
+npm install github:tactik8/jsonldHelpers_v1
+```
+
+
+
+## Build
+for packaging:
+```
+npm run build
+```

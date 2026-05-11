@@ -1,0 +1,23 @@
+{
+  "name": "mongodb_helpers",
+  "version": "0.0.1",
+  "description": "MongoDB client",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && npm run build:cjs && npm run build:esm",
+    "build:cjs": "npx esbuild src/index.js --bundle --minify --platform=node --format=cjs --outfile=dist/index.cjs",
+    "build:esm": "npx esbuild src/index.js --bundle --minify --platform=node --format=esm --outfile=dist/index.js"
+  },
+  "dependencies": {
+    "jsonld_helpers": "github:tactik8/jsonldHelpers_v1",
+    "mongodb": "^7.2.0"
+  }
+}
