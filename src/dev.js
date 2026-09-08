@@ -48,5 +48,23 @@ async function test4() {
     //action = await db.appendItem(record, item)
 
     console.log('t', JSON.stringify(action, null, 4))
+
+
+
+
+
+    let a = {
+        "@type": "DeleteAction",
+        "targetCollection": {
+            "@id": "https://www.test.com/itemlist44@itemlist"
+        },
+        "object": {
+            "@id": "https://www.test.com/thing1#thing"
+        }
+
+    }
+
+    let r = await db.execute(a)
+
 }
 test4()

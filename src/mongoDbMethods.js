@@ -702,7 +702,7 @@ export async function dbDeleteById(client, databaseID, tenantID, record_ids) {
 
     record_ids = record_ids.filter(x => helpers.record_id(x))
 
-    filter = {
+    let filter = {
         "$or": record_ids
     }
 
