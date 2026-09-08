@@ -121,7 +121,6 @@ export async function dbInit(uri) {
 
 export async function dbHealthCheck(client, databaseID, tenantID) {
 
-    console.log("MongoDB - Starting healthcheck")
     let action = new helpers.Action("MongoDB Healthcheck")
     try {
 
@@ -141,7 +140,6 @@ export async function dbHealthCheck(client, databaseID, tenantID) {
             action.description = "Index already present."
         }
 
-        console.log('MongoDB - ', action.description)
 
         action.setCompleted()
         return action?.record || action
@@ -280,6 +278,35 @@ export async function getCollections(client, databaseID) {
 // Documents
 // -----------------------------------------------------------------
 
+
+
+export async function dbPurge(client, databaseID, tenantID) {
+
+    // init action
+    let action = new helpers.Action('MongoDB Purge')
+
+    try {
+
+        const database = client.db(databaseID);
+        const collection = database.collection(tenantID);
+
+        let records = await collection.deleteMany({});
+
+        action.object = {}
+        action.setCompleted()
+        return action?.record || action
+
+
+    } catch (err) {
+        action.setFailed(String(err))
+        console.log('error', JSON.stringify(action))
+        return action?.record || action
+    }
+
+
+}
+
+
 export async function getDocumentCount(client, databaseID, tenantID) {
 
     const db = client.db(databaseID);
@@ -351,44 +378,67 @@ export async function dbGetNested(client, databaseID, tenantID, records) {
 }
 
 
+export async function dbPatch(client, databaseID, tenantID, records) {
 
+
+
+    let action = new helpers.Action('MongoDB Patch', helpers.clone(records))
+
+    records = getFlatRecords(records)
+
+    let record_ids = records.map(x => x?.["@id"])
+
+    // Retrieve current db records
+    let retrieveCurrentRecordsAction = await dbGet(client, databaseID, tenantID, record_ids)
+    let currentRecords = retrieveCurrentRecordsAction?.result || []
+    currentRecords = helpers.toArray(currentRecords)
+
+
+    // iterate
+    let mergedRecords = []
+    for (let r of records) {
+
+        let currentRecord = currentRecords.find(x => x?.["@id"] == r?.['@id'])
+
+        let mergedRecord = helpers.merge(r, currentRecord)
+
+        mergedRecords.push(mergedRecord)
+
+    }
+
+    let a = await dbInsert(client, databaseID, tenantID, mergedRecords)
+
+    if (a.isFailed) {
+        action.setFailed(a?.error)
+        return action
+    }
+
+    action.setCompleted(mergedRecords)
+
+    let result = action?.record || action
+
+    try {
+        result = JSON.parse(JSON.stringify(result))
+    } catch { }
+
+    return result
+
+
+}
 
 
 export async function dbInsert(client, databaseID, tenantID, records) {
 
 
-
-    // init action
-    let r = records
-    try {
-        r = structuredClone(records);
-    } catch {
-        try {
-            r = JSON.parse(JSON.stringify(records))
-        } catch { }
-    }
-
-    let action = new helpers.Action('MongoDB Insert', r)
+    let action = new helpers.Action('MongoDB Insert', helpers.clone(records))
 
     tenantID = tenantID || 'test'
 
-    let db = new helpers.DB()
-
-
-    records = Array.isArray(records) ? records : [records]
-    records = records.map(x => x?.record || x)
-
-    db.post(records)
-
-    records = db.getRecords(false)
-
-    records = records.map(x => x?.record || x)
-
+    records = getFlatRecords(records)
+    
     // Retrieve
     let queries = []
     for (let r of records) {
-
-
 
         let q = {
             updateOne: {
@@ -424,7 +474,7 @@ export async function dbInsert(client, databaseID, tenantID, records) {
 
         try {
             result = JSON.parse(JSON.stringify(result))
-        } catch {}
+        } catch { }
 
         return result
 
@@ -435,11 +485,11 @@ export async function dbInsert(client, databaseID, tenantID, records) {
 
         try {
             result = JSON.parse(JSON.stringify(result))
-        } catch {}
+        } catch { }
 
         return result
 
-       
+
     }
 
 
@@ -502,7 +552,7 @@ export async function dbSearch(client, databaseID, tenantID, filter, orderBy, or
         ordering['_id'] = -1
         let records = await collection.find(filter).sort(ordering).skip(offset).limit(limit).toArray();
 
-        
+
 
         let count = await collection.countDocuments(filter);
 
@@ -608,10 +658,52 @@ export async function dbDelete(client, databaseID, tenantID, filter) {
     // init action
     let action = new helpers.Action('MongoDB Delete', filter)
 
+    if (typeof filter == "string") {
+        filter = { "@id": filter }
+    }
+
+
     filter = filter || {}
     for (let k of Object.keys(filter)) {
         filter['data.' + k] = filter[k]
         delete filter[k]
+    }
+
+    try {
+
+        const database = client.db(databaseID);
+        const collection = database.collection(tenantID);
+
+        let records = await collection.deleteMany(filter);
+
+        action.object = filter
+        action.setCompleted()
+        return action?.record || action
+
+
+    } catch (err) {
+        action.setFailed(String(err))
+        return action?.record || action
+    }
+
+}
+
+
+export async function dbDeleteById(client, databaseID, tenantID, record_ids) {
+
+
+    // init action
+    let action = new helpers.Action('MongoDB Delete by Id', record_ids)
+
+
+    record_ids = helpers.toArray(record_ids)
+
+    record_ids = record_ids.map(x => (typeof x) == "string" ? { "@id": x } : x)
+
+    record_ids = record_ids.filter(x => helpers.record_id(x))
+
+    filter = {
+        "$or": record_ids
     }
 
     try {
@@ -647,3 +739,38 @@ function _cleanMongoRecord(record) {
     return record
 }
 
+
+
+
+
+/**
+ * Return an array of flatten records
+ * @param {*} records 
+ * @returns 
+ */
+function getFlatRecords(records) {
+
+    // init action
+    
+
+    if(helpers.isArray(records)){
+        records = records.map(x => x?.record ?? x)
+    } else {
+        records = records?.record ?? records
+    }
+
+    records = helpers.clone(records)
+   
+    let db = new helpers.DB()
+
+    records = helpers.toArray(records)
+    records = records.map(x => x?.record || x)
+
+    db.post(records)
+
+    records = db.getRecords(false)
+
+    records = records.map(x => x?.record || x)
+
+    return records
+}
